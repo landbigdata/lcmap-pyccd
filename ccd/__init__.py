@@ -120,7 +120,7 @@ def __check_inputs(dates, quality, spectra):
 
 def detect(dates, blues, greens, reds, nirs,
            swir1s, swir2s, thermals, qas,
-           prev_results=None, params=None):
+           params=None):
     """Entry point call to detect change
 
     No filtering up-front as different procedures may do things
@@ -136,8 +136,6 @@ def detect(dates, blues, greens, reds, nirs,
         swir2s:   1d-array or list of swir2 band values
         thermals: 1d-array or list of thermal band values
         qas:      1d-array or list of qa band values
-        prev_results:  Previous set of results to be updated with
-            new observations
         params: python dictionary to change module wide processing
             parameters
 
@@ -174,9 +172,9 @@ def detect(dates, blues, greens, reds, nirs,
     probs = qa.quality_probabilities(qas, proc_params)
 
     # Determine which procedure to use for the detection
-    procedure = __determine_fit_procedure(qas, prev_results, proc_params)
+    procedure = __determine_fit_procedure(qas, dates, proc_params)
 
-    results = procedure(dates, spectra, fitter_fn, qas, prev_results, proc_params)
+    results = procedure(dates, spectra, fitter_fn, qas, proc_params)
     log.debug('Total time for algorithm: %s', time.time() - t1)
 
     # call detect and return results as the detections namedtuple

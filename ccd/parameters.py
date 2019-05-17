@@ -88,5 +88,5 @@ defaults = {
     ############################
     # Ordinal date related statistical calculations
     ############################
-    'STAT_ORD': 736694
+    'STAT_ORD': 0
 }

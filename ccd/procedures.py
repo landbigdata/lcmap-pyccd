@@ -37,38 +37,14 @@ from ccd.math_utils import kelvin_to_celsius, adjusted_variogram, euclidean_norm
 log = logging.getLogger(__name__)
 
 
-def procedure_fromprev(prev_results, proc_params):
-    """
-    Determine the procedure from the previous set of results in order to remain
-    consistent.
-
-    Args:
-        prev_results:  Previous set of results to be updated with
-            new observations
-        proc_params: dictionary of processing parameters
-
-    Returns:
-        the corresponding function that will be use to generate
-         the curves
-    """
-    if prev_results['change_models']:
-        if prev_results['change_models'][0]['curve_qa'] == proc_params['CURVE_QA']['PERSIST_SNOW']:
-            return permanent_snow_procedure
-        if prev_results['change_models'][0]['curve_qa'] == proc_params['CURVE_QA']['INSUF_CLEAR']:
-            return insufficient_clear_procedure
-
-    return standard_procedure
-
-
-def fit_procedure(quality, prev_results, proc_params):
+def fit_procedure(quality, dates, proc_params):
     """Determine which curve fitting method to use
 
     This is based on information from the QA band
 
     Args:
         quality: QA information for each observation
-        prev_results:  Previous set of results to be updated with
-            new observations
+        dates: 1d-array or list of ordinal date values
         proc_params: dictionary of processing parameters
 
     Returns:
@@ -83,11 +59,11 @@ def fit_procedure(quality, prev_results, proc_params):
     clear_thresh = proc_params.CLEAR_PCT_THRESHOLD
     snow_thresh = proc_params.SNOW_PCT_THRESHOLD
 
-    if prev_results is not None:
-        func = procedure_fromprev(prev_results, proc_params)
+    stat_mask = statmask(dates, np.ones_like(dates, dtype=np.bool),
+                         proc_params.STAT_ORD)
 
-    elif not qa.enough_clear(quality, clear, water, fill, clear_thresh):
-        if qa.enough_snow(quality, clear, water, snow, snow_thresh):
+    if not qa.enough_clear(quality[stat_mask], clear, water, fill, clear_thresh):
+        if qa.enough_snow(quality[stat_mask], clear, water, snow, snow_thresh):
             func = permanent_snow_procedure
         else:
             func = insufficient_clear_procedure
@@ -100,7 +76,7 @@ def fit_procedure(quality, prev_results, proc_params):
     return func
 
 
-def permanent_snow_procedure(dates, observations, fitter_fn, quality, prev_results,
+def permanent_snow_procedure(dates, observations, fitter_fn, quality,
                              proc_params):
     """
     Snow procedure for when there is a significant amount snow represented
@@ -117,8 +93,6 @@ def permanent_snow_procedure(dates, observations, fitter_fn, quality, prev_resul
         fitter_fn: a function used to fit observation values and
             acquisition dates for each spectra.
         quality: QA information for each observation
-        prev_results:  Previous set of results to be updated with
-            new observations
         proc_params: dictionary of processing parameters
 
     Returns:
@@ -160,7 +134,7 @@ def permanent_snow_procedure(dates, observations, fitter_fn, quality, prev_resul
     return (result,), processing_mask
 
 
-def insufficient_clear_procedure(dates, observations, fitter_fn, quality, prev_results,
+def insufficient_clear_procedure(dates, observations, fitter_fn, quality,
                                  proc_params):
     """
     insufficient clear procedure for when there is an insufficient quality
@@ -177,8 +151,6 @@ def insufficient_clear_procedure(dates, observations, fitter_fn, quality, prev_r
         fitter_fn: a function used to fit observation values and
             acquisition dates for each spectra.
         quality: QA information for each observation
-        prev_results:  Previous set of results to be updated with
-            new observations
         proc_params: dictionary of processing parameters
 
     Returns:
@@ -219,7 +191,7 @@ def insufficient_clear_procedure(dates, observations, fitter_fn, quality, prev_r
     return (result,), processing_mask
 
 
-def standard_procedure(dates, observations, fitter_fn, quality, prev_results,
+def standard_procedure(dates, observations, fitter_fn, quality,
                        proc_params):
     """
     Runs the core change detection algorithm.
@@ -248,8 +220,6 @@ def standard_procedure(dates, observations, fitter_fn, quality, prev_results,
         fitter_fn: a function used to fit observation values and
             acquisition dates for each spectra.
         quality: QA information for each observation
-        prev_results:  Previous set of results to be updated with
-            new observations
         proc_params: dictionary of processing parameters
 
     Returns:

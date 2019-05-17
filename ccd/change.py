@@ -320,6 +320,9 @@ def statmask(dates, processing_mask, max_ord):
     Returns:
         bool mask
     """
-    stat_mask = np.copy(processing_mask)
-    stat_mask[dates > max_ord] = 0
-    return stat_mask
+    if max_ord > 0:
+        stat_mask = np.copy(processing_mask)
+        stat_mask[dates > max_ord] = 0
+        return stat_mask
+    else:
+        return processing_mask
