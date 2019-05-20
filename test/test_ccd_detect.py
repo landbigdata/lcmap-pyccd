@@ -47,7 +47,7 @@ def test_npy():
     samples = ['test/resources/h03v09_-2010765_1964625_pixel.npy']  # Main loop failure in LF
 
     for sample in samples:
-        dat = np.load(sample)
+        dat = np.load(sample, allow_pickle=True)
         results = ccd.detect(**dat[1])
 
 
@@ -57,7 +57,7 @@ def test_insuff_clear():
     """
     sample = 'test/resources/h04v03_-1947075_2846265_pixel_insuff.npy'
 
-    result = ccd.detect(**np.load(sample)[1])
+    result = ccd.detect(**np.load(sample, allow_pickle=True)[1])
 
     assert result['change_models'][0]['curve_qa'] == params.CURVE_QA['INSUF_CLEAR']
 
@@ -68,7 +68,7 @@ def test_perm_snow():
     """
     sample = 'test/resources/h04v03_-1947105_2846265_pixel_snow.npy'
 
-    result = ccd.detect(**np.load(sample)[1])
+    result = ccd.detect(**np.load(sample, allow_pickle=True)[1])
 
     assert result['change_models'][0]['curve_qa'] == params.CURVE_QA['PERSIST_SNOW']
 
@@ -79,7 +79,7 @@ def test_startfit():
     """
     sample = 'test/resources/h04v03_-1945155_2844645_pixel_startfit.npy'
 
-    result = ccd.detect(**np.load(sample)[1])
+    result = ccd.detect(**np.load(sample, allow_pickle=True)[1])
 
     assert result['change_models'][0]['curve_qa'] == params.CURVE_QA['START']
 
@@ -90,7 +90,7 @@ def test_endfit():
     """
     sample = 'test/resources/h04v03_-1945125_2844645_pixel_endfit.npy'
 
-    result = ccd.detect(**np.load(sample)[1])
+    result = ccd.detect(**np.load(sample, allow_pickle=True)[1])
 
     assert result['change_models'][-1]['curve_qa'] == params.CURVE_QA['END']
 
