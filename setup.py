@@ -61,7 +61,7 @@ setup(
 
     packages=['ccd', 'ccd.models'],
 
-    install_requires=['numpy>=1.10.0',
+    install_requires=['numpy>=1.14.0',
                       'scipy>=0.18.1',
                       'scikit-learn>=0.18'],
 
